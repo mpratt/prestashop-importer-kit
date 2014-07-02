@@ -1,0 +1,22 @@
+{
+    "name": "mpratt/pik",
+    "type": "library",
+    "description": "Prestashop Importer kit.",
+    "keywords": ["Prestashop", "Importer", "Kit"],
+    "homepage": "https://github.com/mpratt/prestashop-importer-kit",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Michael Pratt",
+            "email": "pratt@hablarmierda.net",
+            "homepage": "http://www.michael-pratt.com",
+            "role": "Author/Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.2"
+    },
+    "autoload": {
+        "psr-0": {"Pik_": "Lib/"}
+    }
+}
