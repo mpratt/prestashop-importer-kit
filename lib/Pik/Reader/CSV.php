@@ -130,6 +130,10 @@ class Pik_Reader_CSV implements Iterator, Countable
                 }
             }
 
+            if ($v == '.') {
+                $v = '';
+            }
+
             $return[$k] = $v;
         }
 
