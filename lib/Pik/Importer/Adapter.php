@@ -74,7 +74,7 @@ abstract class Pik_Importer_Adapter
      * @param int $id The Id of the product
      * @return object
      */
-    protected function getProduct($id = null)
+    public function getProduct($id = null)
     {
         if (!empty($id)) {
             $product = new Product($id);
@@ -210,7 +210,7 @@ abstract class Pik_Importer_Adapter
      * @param array $data Associative array
      * @return bool
      */
-    protected function productExists(array $data)
+    public function productExists(array $data)
     {
         return (bool) $this->getProductId($data);
     }
