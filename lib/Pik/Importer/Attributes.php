@@ -46,13 +46,12 @@ class Pik_Importer_Attributes extends Pik_Importer_Adapter implements Pik_Import
             }
 
             if (!empty($data['categories'])) {
-                $cats = array_map('intval', $data['categories']);
+                $cats = array_map('intval', (array) $data['categories']);
                 $product = $this->getProduct($id);
                 $product->id_category = array((int) min($cats));
                 $product->id_category_default = (int) min($cats);
                 $product->addToCategories($cats);
                 $product->save();
-                //sleep(1);
                 $product->save();
                 unset($data['categories']);
             }
@@ -69,8 +68,11 @@ class Pik_Importer_Attributes extends Pik_Importer_Adapter implements Pik_Import
 
     protected function addFeatures($idProduct, $features)
     {
-        $array = explode(',', $features);
-        foreach ($array as $feat)
+        if (!is_array($features)) {
+            $features = explode(',', $features);
+        }
+
+        foreach ($features as $feat)
         {
             if (empty($feat)) {
                 continue;
@@ -96,7 +98,7 @@ class Pik_Importer_Attributes extends Pik_Importer_Adapter implements Pik_Import
 
     protected function addSingleQuantity($id, array &$data = array())
     {
-        if (!empty($data['quantity']) && empty($data['value']) && empty($data['attribute'])) {
+        if (array_key_exists('quantity', $data) && empty($data['value']) && empty($data['attribute'])) {
             StockAvailable::setQuantity($id, null, (int) $data['quantity']);
             unset($data['quantity']);
         }
