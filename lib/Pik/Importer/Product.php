@@ -95,6 +95,22 @@ class Pik_Importer_Product extends Pik_Importer_Adapter implements Pik_Importer_
         ), $id);
     }
 
+
+    /**
+     * Disables a product on the shop
+     *
+     * @param mixed $id
+     * @return
+     */
+    public function isActiveProduct($id)
+    {
+        $sql = 'SELECT active
+            FROM '._DB_PREFIX_.'product_shop
+            WHERE id_product = ' . pSQL((int) $id);
+
+        return Db::getInstance()->getValue($sql);
+    }
+
     /**
      * Updates product information directly on the database
      *
@@ -176,12 +192,14 @@ class Pik_Importer_Product extends Pik_Importer_Adapter implements Pik_Importer_
             $product->addToCategories($category->id);
         }
 
-        $product->id_category_default = '';
-        $catIds = array_reverse(array_unique($catIds));
-        foreach ($catIds as $defaultId) {
-            if ($defaultId > 2 && Category::categoryExists((int) $defaultId)) {
-                $product->id_category_default = $defaultId;
-                break;
+        if (empty($product->id_category_default) || !Category::categoryExists((int) $product->id_category_default)) {
+            $catIds = array_reverse(array_unique($catIds));
+            $ignore = array(Configuration::get('PS_ROOT_CATEGORY'), Configuration::get('PS_HOME_CATEGORY'));
+            foreach ($catIds as $defaultId) {
+                if (!in_array($defaultId, $ignore) && Category::categoryExists((int) $defaultId)) {
+                    $product->id_category_default = $defaultId;
+                    break;
+                }
             }
         }
 
@@ -306,15 +324,11 @@ class Pik_Importer_Product extends Pik_Importer_Adapter implements Pik_Importer_
             UPDATE ' . _DB_PREFIX_ . 'category AS mc
             SET mc.active = 1
             WHERE mc.id_category IN (
-                SELECT id_category
-                FROM (
-                    SELECT c.id_category
-                    FROM ' . _DB_PREFIX_ . 'category AS c
-                    LEFT JOIN ' . _DB_PREFIX_ . 'category AS c2 ON (c2.id_parent = c.id_category)
-                    LEFT JOIN ' . _DB_PREFIX_ . 'category AS c3 ON (c3.id_parent = c2.id_category)
-                    WHERE c2.active = 1 OR c3.active = 1
-                    GROUP BY c.id_category
-                ) AS tmp
+                SELECT c.id_category
+                FROM ' . _DB_PREFIX_ . 'product AS p
+                LEFT JOIN ' . _DB_PREFIX_ . 'category_product AS c ON ( c.id_product = p.id_product )
+                WHERE p.active =1
+                GROUP BY c.id_category
             )
         ');
 
@@ -330,6 +344,20 @@ class Pik_Importer_Product extends Pik_Importer_Adapter implements Pik_Importer_
                 )
             ');
         }
+    }
+
+    /**
+     * Hides/Disables free products
+     *
+     * @return void
+     */
+    public function disableFreeProducts()
+    {
+        Db::getInstance()->query('
+            UPDATE ' . _DB_PREFIX_ . 'product AS p
+            SET p.active = 0
+            WHERE p.price = 0
+        ');
     }
 }
 
